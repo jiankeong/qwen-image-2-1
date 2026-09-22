@@ -28,7 +28,7 @@ class BootstrapTest(unittest.TestCase):
                 module.install_models(tmp / "cache", model_root, downloader)
             self.assertEqual(len(calls), 6)
             self.assertEqual(len(module.MODELS), 3)
-            self.assertEqual(calls[0], "qwen-image-2.1-UC-Q4_K_M.gguf")
+            self.assertEqual(calls[0], "qwen-image-2.1-UC-Q5_K_M.gguf")
             for remote, relative in module.MODELS:
                 target = model_root / relative
                 self.assertTrue(target.is_symlink(), remote)

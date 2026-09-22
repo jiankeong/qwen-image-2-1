@@ -3,9 +3,9 @@
 import os
 from pathlib import Path
 
-REPO = "abenzerps/Qwen-Image-2.1-GGUF"
+REPO = "abenzerps/Qwen-Image-2.1-Uncensored-GGUF"
 MODELS = (
-    ("qwen-image-2.1-UC-Q4_K_M.gguf", "diffusion_models/qwen-image-2.1-UC-Q4_K_M.gguf"),
+    ("qwen-image-2.1-UC-Q5_K_M.gguf", "diffusion_models/qwen-image-2.1-UC-Q5_K_M.gguf"),
     ("text_encoders/qwen3vl_8b_int8_convrot.safetensors", "text_encoders/qwen3vl_8b_int8_convrot.safetensors"),
     ("vae/qwen_image_2.1_vae_bf16.safetensors", "vae/qwen_image_2.1_vae_bf16.safetensors"),
 )
