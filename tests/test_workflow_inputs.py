@@ -50,7 +50,7 @@ class WorkflowInputsTest(unittest.TestCase):
         workflow = request["workflow"]
         check_links(workflow)
         self.assertNotIn("nodes", workflow)
-        self.assertEqual(workflow["451"]["inputs"]["unet_name"], "qwen-image-2.1-UC-Q5_K_M.gguf")
+        self.assertEqual(workflow["451"]["inputs"]["unet_name"], "qwen-image-2.1-UC-Q6_K.gguf")
         self.assertEqual(workflow["453"]["inputs"]["clip_name"], "qwen3vl_8b_int8_convrot.safetensors")
         self.assertEqual(workflow["452"]["inputs"]["resolution"], 1024)
         self.assertEqual(workflow["458"]["inputs"]["latent_image"], ["456", 0])

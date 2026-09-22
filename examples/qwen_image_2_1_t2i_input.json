@@ -4,7 +4,7 @@
       "451": {
         "class_type": "UnetLoaderGGUF",
         "inputs": {
-          "unet_name": "qwen-image-2.1-UC-Q5_K_M.gguf"
+          "unet_name": "qwen-image-2.1-UC-Q6_K.gguf"
         }
       },
       "453": {

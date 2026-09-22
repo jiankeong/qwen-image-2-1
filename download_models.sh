@@ -12,9 +12,9 @@ download() {
   test -s "$target"
 }
 
-download 'qwen-image-2.1-UC-Q5_K_M.gguf'
+download 'qwen-image-2.1-UC-Q6_K.gguf'
 mkdir -p "${DEST}/diffusion_models"
-mv "${DEST}/qwen-image-2.1-UC-Q5_K_M.gguf" "${DEST}/diffusion_models/qwen-image-2.1-UC-Q5_K_M.gguf"
+mv "${DEST}/qwen-image-2.1-UC-Q6_K.gguf" "${DEST}/diffusion_models/qwen-image-2.1-UC-Q6_K.gguf"
 download 'text_encoders/qwen3vl_8b_int8_convrot.safetensors'
 download 'vae/qwen_image_2.1_vae_bf16.safetensors'
 

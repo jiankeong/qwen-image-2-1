@@ -1,6 +1,6 @@
 # Qwen-Image-2.1 GGUF on RunPod Serverless
 
-This project extends the official RunPod ComfyUI worker with current ComfyUI and the `leejet/ComfyUI-GGUF` fork. Following the architecture of [the reference worker](https://github.com/jiankeong/qwen-image-edit-runpod), the Docker image includes code but **does not download the approximately 15.3 GB of weights during the Hub build**. At normal worker startup, `bootstrap_models.py` downloads the Q5_K_M transformer, int8 text encoder and BF16 VAE into `/runpod-volume/hf-cache` and links them into `/comfyui/models`. A network volume is recommended so later cold starts reuse the cache; without one, the configured container disk is used and downloads recur on new workers.
+This project extends the official RunPod ComfyUI worker with current ComfyUI and the `leejet/ComfyUI-GGUF` fork. Following the architecture of [the reference worker](https://github.com/jiankeong/qwen-image-edit-runpod), the Docker image includes code but **does not download the approximately 15.9 GB of weights during the Hub build**. At normal worker startup, `bootstrap_models.py` downloads the Q6_K transformer, int8 text encoder and BF16 VAE into `/runpod-volume/hf-cache` and links them into `/comfyui/models`. A network volume is recommended so later cold starts reuse the cache; without one, the configured container disk is used and downloads recur on new workers.
 
 The Hub smoke test sets `USE_MOCK_PIPELINE=1`, which starts only the lightweight RunPod handler and returns a valid one-pixel PNG. It does not boot ComfyUI, download model files, or verify GPU inference. Normal inference defaults to `0` and delegates to the official ComfyUI worker.
 
@@ -68,7 +68,7 @@ python3 examples/build_edit_input.py /path/to/input.jpg \
 | `width`, `height` | Text-to-image | Integers from 64 to 2048, multiples of 32; default 1024×1024. |
 | `resolution` | Both | Multiple of 32, up to 4096; text-to-image minimum 32 and default 1024; edit permits 0 and defaults to 0 (automatic image size). For large edit images, try 1024 to reduce memory and execution time. |
 
-`input.workflow` is also supported for advanced use and is forwarded to the ComfyUI worker instead of expanding the compact fields. The [example requests](examples/README.md) include full workflow JSON. To construct your own, export an API workflow from ComfyUI, use **Unet Loader (GGUF)** with `qwen-image-2.1-UC-Q5_K_M.gguf`, the `qwen3vl_8b_int8_convrot.safetensors` text encoder, and `qwen_image_2.1_vae_bf16.safetensors` VAE.
+`input.workflow` is also supported for advanced use and is forwarded to the ComfyUI worker instead of expanding the compact fields. The [example requests](examples/README.md) include full workflow JSON. To construct your own, export an API workflow from ComfyUI, use **Unet Loader (GGUF)** with `qwen-image-2.1-UC-Q6_K.gguf`, the `qwen3vl_8b_int8_convrot.safetensors` text encoder, and `qwen_image_2.1_vae_bf16.safetensors` VAE.
 
 ### Submit a request
 
