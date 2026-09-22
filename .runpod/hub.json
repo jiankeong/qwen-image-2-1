@@ -1,0 +1,13 @@
+{
+  "title": "Qwen-Image-2.1 GGUF (ComfyUI)",
+  "description": "Generate images with Qwen-Image-2.1 Q4_K_M using the ComfyUI Serverless worker.",
+  "type": "serverless",
+  "category": "image",
+  "config": {
+    "runsOn": "GPU",
+    "containerDiskInGb": 40,
+    "gpuIds": "ADA_24",
+    "gpuCount": 1,
+    "allowedCudaVersions": ["12.8", "12.9"]
+  }
+}

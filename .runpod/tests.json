@@ -1,0 +1,33 @@
+{
+  "tests": [
+    {
+      "name": "comfyui_image_output_smoke",
+      "input": {
+        "workflow": {
+          "1": {
+            "class_type": "EmptyImage",
+            "inputs": {
+              "width": 64,
+              "height": 64,
+              "batch_size": 1,
+              "color": 3368601
+            }
+          },
+          "2": {
+            "class_type": "SaveImage",
+            "inputs": {
+              "images": ["1", 0],
+              "filename_prefix": "hub_smoke"
+            }
+          }
+        }
+      },
+      "timeout": 120000
+    }
+  ],
+  "config": {
+    "gpuTypeId": "NVIDIA GeForce RTX 4090",
+    "gpuCount": 1,
+    "allowedCudaVersions": ["12.8"]
+  }
+}
