@@ -16,19 +16,67 @@ Attach a RunPod network volume to the endpoint to persist model downloads. The w
 
 Push this repository to GitHub. In RunPod, choose **Serverless → New Endpoint → Start from GitHub Repo**, select the repository, set context `/` and Dockerfile `Dockerfile`. Select one GPU with at least 24 GB VRAM and adequate system RAM for the 9.35 GB text encoder; start with 0 active workers and 1 maximum worker. Allow at least 40 GB container disk for model cache and runtime when no network volume is attached. Deploy, then note the endpoint ID. The initial build installs ComfyUI and the GGUF fork; normal worker startup downloads the three model weights unless they are cached on its network volume.
 
-## 4. Prepare and submit a workflow
+## 4. Input parameters
 
-For routine calls, send only changing values; see [`examples/README.md`](examples/README.md). For example, `{"input":{"prompt":"A mountain lake","width":1024,"height":1024}}` uses the bundled text-to-image workflow. For editing, include `input.images` as one to ten base64-encoded reference images. Full `input.workflow` requests remain supported. To construct a custom workflow, use the [official Qwen-Image-2.1 text-to-image workflow](https://github.com/Comfy-Org/workflow_templates/blob/main/templates/image_qwen_image_2_1_t2i.json) in ComfyUI. Replace its diffusion loader with **Unet Loader (GGUF)**, choose `qwen-image-2.1-UC-Q4_K_M.gguf`, choose `qwen3vl_8b_int8_convrot.safetensors` in CLIPLoader with type `qwen_image`, and choose `qwen_image_2.1_vae_bf16.safetensors` in VAELoader. Set the prompt and save through **Workflow → Export (API)**. Send the exported JSON as `input.workflow`:
+Send a JSON object with an outer `input` key. For normal use, supply only the values that change; the handler fills in the bundled ComfyUI workflow.
+
+### Text-to-image
+
+```json
+{
+  "input": {
+    "task": "t2i",
+    "prompt": "A mountain lake at sunrise",
+    "width": 1024,
+    "height": 1024,
+    "steps": 25,
+    "seed": 42
+  }
+}
+```
+
+### Image editing
+
+```json
+{
+  "input": {
+    "task": "edit",
+    "prompt": "Change the jacket to blue and keep the background",
+    "images": ["data:image/jpeg;base64,REPLACE_WITH_IMAGE_BASE64"],
+    "resolution": 1024,
+    "steps": 12
+  }
+}
+```
+
+Replace the example image string with a real PNG, JPEG, or WebP file encoded as base64. You may pass a raw base64 string instead of a `data:image/...;base64,` URI. The image list accepts 1–10 images; each can also be an object such as `{"image":"data:image/jpeg;base64,..."}`. The handler detects the format from the bytes, including when a data URI has the wrong MIME label. To build an edit request from a local image without manually encoding it:
+
+```bash
+python3 examples/build_edit_input.py /path/to/input.jpg \
+  --prompt "Change the jacket to blue" --output request.json
+```
+
+| `input` field | Applies to | Values and defaults |
+| --- | --- | --- |
+| `prompt` | Both | Required non-empty string. |
+| `task` | Both | `t2i` or `edit`; inferred as `edit` when a non-empty `images` list is supplied, otherwise `t2i`. |
+| `images` | Edit | Required list of 1–10 base64 images; PNG, JPEG, or WebP. |
+| `negative_prompt` | Both | Optional string; defaults to `""`. |
+| `seed` | Both | Integer from 0 to 2⁶⁴−1; if omitted, the bundled workflow's fixed seed is used. |
+| `steps` | Both | Integer from 1 to 100; defaults to 25. |
+| `cfg` | Both | Number from 0 to 20; defaults to 1. |
+| `width`, `height` | Text-to-image | Integers from 64 to 2048, multiples of 32; default 1024×1024. |
+| `resolution` | Both | Multiple of 32, up to 4096; text-to-image minimum 32 and default 1024; edit permits 0 and defaults to 0 (automatic image size). For large edit images, try 1024 to reduce memory and execution time. |
+
+`input.workflow` is also supported for advanced use and is forwarded to the ComfyUI worker instead of expanding the compact fields. The [example requests](examples/README.md) include full workflow JSON. To construct your own, export an API workflow from ComfyUI, use **Unet Loader (GGUF)** with `qwen-image-2.1-UC-Q4_K_M.gguf`, the `qwen3vl_8b_int8_convrot.safetensors` text encoder, and `qwen_image_2.1_vae_bf16.safetensors` VAE.
+
+### Submit a request
+
+For either example above, save the JSON as `request.json`, then submit it to the endpoint:
 
 ```bash
 export RUNPOD_API_KEY='YOUR_KEY'
 export ENDPOINT_ID='YOUR_ENDPOINT_ID'
-python3 - <<'PY' > request.json
-import json
-with open('workflow_api.json', encoding='utf-8') as f:
-    workflow = json.load(f)
-print(json.dumps({'input': {'workflow': workflow}}))
-PY
 curl -sS -H "Authorization: Bearer ${RUNPOD_API_KEY}" -H 'Content-Type: application/json' \
   --data-binary @request.json "https://api.runpod.ai/v2/${ENDPOINT_ID}/run"
 ```
