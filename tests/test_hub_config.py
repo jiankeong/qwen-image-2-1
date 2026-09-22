@@ -21,8 +21,10 @@ class HubConfigTest(unittest.TestCase):
     def test_smoke_test_is_connected_and_model_independent(self):
         suite = json.loads((ROOT / ".runpod/tests.json").read_text())
         self.assertEqual(suite["config"]["gpuCount"], 1)
-        self.assertIn(suite["config"]["allowedCudaVersions"][0],
-                      json.loads((ROOT / ".runpod/hub.json").read_text())["config"]["allowedCudaVersions"])
+        hub_versions = set(json.loads((ROOT / ".runpod/hub.json").read_text())["config"]["allowedCudaVersions"])
+        test_versions = set(suite["config"]["allowedCudaVersions"])
+        self.assertTrue(test_versions <= hub_versions)
+        self.assertIn("13.0", test_versions)
         test = suite["tests"][0]
         self.assertGreaterEqual(test["timeout"], 60000)
         nodes = test["input"]["workflow"]
