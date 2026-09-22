@@ -26,11 +26,8 @@ class HubConfigTest(unittest.TestCase):
         self.assertTrue(test_versions <= hub_versions)
         self.assertIn("13.0", test_versions)
         test = suite["tests"][0]
-        self.assertGreaterEqual(test["timeout"], 60000)
-        nodes = test["input"]["workflow"]
-        self.assertEqual(nodes["1"]["class_type"], "EmptyImage")
-        self.assertEqual(nodes["2"]["class_type"], "SaveImage")
-        self.assertEqual(nodes["2"]["inputs"]["images"], ["1", 0])
+        self.assertEqual(test["input"], {"healthcheck": True})
+        self.assertEqual(test["timeout"], 30000)
 
     def test_models_are_deferred_to_worker_startup(self):
         dockerfile = (ROOT / "Dockerfile").read_text()

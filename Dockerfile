@@ -11,6 +11,9 @@ RUN git -C /comfyui fetch --no-tags --depth 1 origin master && \
 
 RUN mv /handler.py /worker_comfyui_handler.py
 COPY handler.py /handler.py
+COPY workflow_request.py /workflow_request.py
+COPY examples/qwen_image_2_1_t2i_input.json /examples/qwen_image_2_1_t2i_input.json
+COPY examples/qwen_image_2_1_multi_edit_input.template.json /examples/qwen_image_2_1_multi_edit_input.template.json
 COPY bootstrap_models.py /bootstrap_models.py
 COPY startup.sh /startup.sh
 CMD ["sh", "/startup.sh"]

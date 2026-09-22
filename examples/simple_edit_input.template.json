@@ -1,0 +1,11 @@
+{
+  "input": {
+    "prompt": "Keep the subject in image 1 and apply the clothing from image 2",
+    "images": [
+      "data:image/png;base64,REPLACE_WITH_IMAGE_1_BASE64",
+      "data:image/png;base64,REPLACE_WITH_IMAGE_2_BASE64"
+    ],
+    "steps": 25,
+    "seed": 42
+  }
+}

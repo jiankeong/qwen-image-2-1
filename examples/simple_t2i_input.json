@@ -1,0 +1,9 @@
+{
+  "input": {
+    "prompt": "A cinematic landscape with mountains and a lake",
+    "width": 1024,
+    "height": 1024,
+    "steps": 25,
+    "seed": 42
+  }
+}

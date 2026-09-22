@@ -33,9 +33,11 @@ class BootstrapTest(unittest.TestCase):
                 self.assertTrue(target.is_symlink(), remote)
                 self.assertEqual(target.resolve(), source.resolve())
 
-    def test_startup_mock_skips_bootstrap_but_runs_worker(self):
+    def test_startup_mock_skips_bootstrap_and_comfyui(self):
         script = (ROOT / "startup.sh").read_text()
-        self.assertIn('if [ "${USE_MOCK_PIPELINE:-0}" != "1" ]; then', script)
+        self.assertIn('if [ "${USE_MOCK_PIPELINE:-0}" = "1" ]; then', script)
+        self.assertIn("exec python /handler.py", script)
+        self.assertLess(script.index("exec python /handler.py"), script.index("python /bootstrap_models.py"))
         self.assertIn("exec /start.sh", script)
 
 

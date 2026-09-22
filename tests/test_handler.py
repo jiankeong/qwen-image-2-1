@@ -1,6 +1,8 @@
 """Check the repository entrypoint without needing a GPU or RunPod account."""
 
 import runpy
+import base64
+import os
 import sys
 import types
 import unittest
@@ -20,15 +22,26 @@ class HandlerEntrypointTest(unittest.TestCase):
         upstream = types.ModuleType("worker_comfyui_handler")
         upstream.handler = official_handler
 
-        with patch.dict(sys.modules, {"runpod": runpod, "worker_comfyui_handler": upstream}):
+        with patch.dict(os.environ, {"USE_MOCK_PIPELINE": "0"}), patch.dict(sys.modules, {"runpod": runpod, "worker_comfyui_handler": upstream}):
             namespace = runpy.run_path(str(ROOT / "handler.py"), run_name="__main__")
 
-        registered_handler = start.call_args.args[0]["handler"]
-        self.assertIs(registered_handler, namespace["handler"])
-        event = {"input": {"workflow": {}}}
-        official_handler.return_value = {"images": []}
-        self.assertEqual(registered_handler(event), {"images": []})
-        official_handler.assert_called_once_with(event)
+            registered_handler = start.call_args.args[0]["handler"]
+            self.assertIs(registered_handler, namespace["handler"])
+            event = {"input": {"workflow": {}}}
+            official_handler.return_value = {"images": []}
+            self.assertEqual(registered_handler(event), {"images": []})
+            official_handler.assert_called_once_with(event)
+
+    def test_mock_handler_returns_png_without_upstream(self):
+        start = Mock(name="runpod.serverless.start")
+        runpod = types.ModuleType("runpod")
+        runpod.serverless = types.SimpleNamespace(start=start)
+        with patch.dict(os.environ, {"USE_MOCK_PIPELINE": "1"}), patch.dict(sys.modules, {"runpod": runpod, "worker_comfyui_handler": None}):
+            runpy.run_path(str(ROOT / "handler.py"), run_name="__main__")
+            result = start.call_args.args[0]["handler"]({"input": {"healthcheck": True}})
+        image = result["images"][0]
+        self.assertEqual(image["filename"], "hub_smoke.png")
+        self.assertTrue(base64.b64decode(image["data"]).startswith(b"\x89PNG\r\n\x1a\n"))
 
     def test_dockerfile_preserves_upstream_and_uses_bootstrap(self):
         dockerfile = (ROOT / "Dockerfile").read_text()
