@@ -48,8 +48,8 @@ def _image(value, index):
         kind, suffix = "webp", ".webp"
     else:
         raise ValueError(f"images[{index}] must be PNG, JPEG or WebP")
-    if match and match.group(1).lower() != kind:
-        raise ValueError(f"images[{index}] data URI does not match image bytes")
+    # Prefer the decoded file signature: browser uploads sometimes label JPEG
+    # bytes as image/png in a data URI. Normalize the metadata for ComfyUI.
     return f"data:image/{kind};base64,{encoded}", suffix
 
 

@@ -37,7 +37,7 @@ class HubConfigTest(unittest.TestCase):
         self.assertNotIn("comfy model download", dockerfile)
         self.assertIn("python /bootstrap_models.py", startup)
         for name in (
-            "qwen-image-2.1-Q4_K_M.gguf",
+            "qwen-image-2.1-UC-Q4_K_M.gguf",
             "qwen3vl_8b_int8_convrot.safetensors",
             "qwen_image_2.1_vae_bf16.safetensors",
         ):

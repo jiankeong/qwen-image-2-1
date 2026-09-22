@@ -39,12 +39,18 @@ class WorkflowInputsTest(unittest.TestCase):
         self.assertEqual(result["workflow"]["474"]["inputs"]["images.image_1"], ["470", 0])
         self.assertEqual(result["images"][0]["name"], "input_image_1.png")
 
+    def test_edit_input_corrects_mislabeled_jpeg_data_uri(self):
+        image = base64.b64encode(b"\xff\xd8\xff" + b"demo").decode("ascii")
+        result = expand_input({"prompt": "edit", "images": [f"data:image/png;base64,{image}"]})
+        self.assertEqual(result["images"][0]["name"], "input_image_1.jpg")
+        self.assertTrue(result["images"][0]["image"].startswith("data:image/jpeg;base64,"))
+
     def test_text_to_image_input_uses_installed_models(self):
         request = load_request("qwen_image_2_1_t2i_input.json")
         workflow = request["workflow"]
         check_links(workflow)
         self.assertNotIn("nodes", workflow)
-        self.assertEqual(workflow["451"]["inputs"]["unet_name"], "qwen-image-2.1-Q4_K_M.gguf")
+        self.assertEqual(workflow["451"]["inputs"]["unet_name"], "qwen-image-2.1-UC-Q4_K_M.gguf")
         self.assertEqual(workflow["453"]["inputs"]["clip_name"], "qwen3vl_8b_int8_convrot.safetensors")
         self.assertEqual(workflow["452"]["inputs"]["resolution"], 1024)
         self.assertEqual(workflow["458"]["inputs"]["latent_image"], ["456", 0])
