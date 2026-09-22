@@ -6,5 +6,10 @@ RUN git -C /comfyui pull --ff-only && \
     git clone https://github.com/leejet/ComfyUI-GGUF.git /comfyui/custom_nodes/ComfyUI-GGUF && \
     python -m pip install --no-cache-dir -r /comfyui/custom_nodes/ComfyUI-GGUF/requirements.txt
 
+# Preserve the official worker's complete image-handling implementation, then
+# expose its RunPod startup explicitly in this repository for GitHub validation.
+RUN mv /handler.py /worker_comfyui_handler.py
+COPY handler.py /handler.py
+
 # The official worker discovers models on an attached volume at /runpod-volume/models.
-# Its inherited entrypoint and handler serve the RunPod /run and /runsync APIs.
+# Its inherited /start.sh starts ComfyUI before invoking our handler wrapper.

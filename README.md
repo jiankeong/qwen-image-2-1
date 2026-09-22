@@ -2,6 +2,8 @@
 
 This project extends the official RunPod ComfyUI worker with current ComfyUI and the `leejet/ComfyUI-GGUF` fork required by the linked model. The Q4_K_M transformer, int8 text encoder and BF16 VAE live on a RunPod network volume so the container image stays small. Their combined download is approximately 14.6 GB; allocate at least 25 GB on the volume for headroom.
 
+The repository's `handler.py` explicitly calls `runpod.serverless.start()` to satisfy RunPod's repository check. The Dockerfile preserves the official worker implementation as `/worker_comfyui_handler.py` and delegates every job to it; the inherited `/start.sh` still starts ComfyUI first.
+
 ## 1. Populate a network volume
 
 Create a RunPod network volume in the same region as your eventual endpoint. Attach it to a temporary Pod and, inside that Pod, run:
