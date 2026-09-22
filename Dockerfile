@@ -2,7 +2,7 @@ FROM runpod/worker-comfyui:5.10.0-base
 
 # Install code at build time; cache model weights at runtime on the RunPod volume
 # (or the configured container disk), following the reference worker pattern.
-RUN git -C /comfyui fetch --no-tags --depth 1 origin main && \
+RUN git -C /comfyui fetch --no-tags --depth 1 origin master && \
     git -C /comfyui checkout --detach FETCH_HEAD && \
     python -m pip install --no-cache-dir -r /comfyui/requirements.txt && \
     git clone --depth 1 https://github.com/leejet/ComfyUI-GGUF.git /comfyui/custom_nodes/ComfyUI-GGUF && \

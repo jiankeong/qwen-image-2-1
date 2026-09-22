@@ -32,7 +32,7 @@ class HandlerEntrypointTest(unittest.TestCase):
 
     def test_dockerfile_preserves_upstream_and_uses_bootstrap(self):
         dockerfile = (ROOT / "Dockerfile").read_text()
-        self.assertIn("git -C /comfyui fetch --no-tags --depth 1 origin main", dockerfile)
+        self.assertIn("git -C /comfyui fetch --no-tags --depth 1 origin master", dockerfile)
         self.assertIn("git -C /comfyui checkout --detach FETCH_HEAD", dockerfile)
         self.assertNotIn("git -C /comfyui pull --ff-only", dockerfile)
         self.assertIn("RUN mv /handler.py /worker_comfyui_handler.py", dockerfile)
