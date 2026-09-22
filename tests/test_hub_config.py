@@ -30,15 +30,21 @@ class HubConfigTest(unittest.TestCase):
         self.assertEqual(nodes["2"]["class_type"], "SaveImage")
         self.assertEqual(nodes["2"]["inputs"]["images"], ["1", 0])
 
-    def test_image_contains_all_model_weights(self):
+    def test_models_are_deferred_to_worker_startup(self):
         dockerfile = (ROOT / "Dockerfile").read_text()
+        bootstrap = (ROOT / "bootstrap_models.py").read_text()
+        startup = (ROOT / "startup.sh").read_text()
         self.assertIn("FROM runpod/worker-comfyui:5.10.0-base", dockerfile)
+        self.assertNotIn("comfy model download", dockerfile)
+        self.assertIn("python /bootstrap_models.py", startup)
         for name in (
             "qwen-image-2.1-Q4_K_M.gguf",
             "qwen3vl_8b_int8_convrot.safetensors",
             "qwen_image_2.1_vae_bf16.safetensors",
         ):
-            self.assertIn(name, dockerfile)
+            self.assertIn(name, bootstrap)
+        suite = json.loads((ROOT / ".runpod/tests.json").read_text())
+        self.assertIn({"key": "USE_MOCK_PIPELINE", "value": "1"}, suite["config"]["env"])
 
 
 if __name__ == "__main__":

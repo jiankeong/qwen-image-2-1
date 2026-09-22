@@ -30,11 +30,12 @@ class HandlerEntrypointTest(unittest.TestCase):
         self.assertEqual(registered_handler(event), {"images": []})
         official_handler.assert_called_once_with(event)
 
-    def test_dockerfile_preserves_upstream_and_inherited_startup(self):
+    def test_dockerfile_preserves_upstream_and_uses_bootstrap(self):
         dockerfile = (ROOT / "Dockerfile").read_text()
         self.assertIn("RUN mv /handler.py /worker_comfyui_handler.py", dockerfile)
         self.assertIn("COPY handler.py /handler.py", dockerfile)
-        self.assertNotIn("CMD ", dockerfile)
+        self.assertIn('CMD ["sh", "/startup.sh"]', dockerfile)
+        self.assertIn("COPY bootstrap_models.py /bootstrap_models.py", dockerfile)
 
 
 if __name__ == "__main__":

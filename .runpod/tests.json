@@ -16,7 +16,10 @@
           "2": {
             "class_type": "SaveImage",
             "inputs": {
-              "images": ["1", 0],
+              "images": [
+                "1",
+                0
+              ],
               "filename_prefix": "hub_smoke"
             }
           }
@@ -28,6 +31,14 @@
   "config": {
     "gpuTypeId": "NVIDIA GeForce RTX 4090",
     "gpuCount": 1,
-    "allowedCudaVersions": ["12.8"]
+    "allowedCudaVersions": [
+      "12.8"
+    ],
+    "env": [
+      {
+        "key": "USE_MOCK_PIPELINE",
+        "value": "1"
+      }
+    ]
   }
 }

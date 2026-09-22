@@ -8,6 +8,40 @@
     "containerDiskInGb": 40,
     "gpuIds": "ADA_24",
     "gpuCount": 1,
-    "allowedCudaVersions": ["12.8", "12.9"]
+    "allowedCudaVersions": [
+      "12.8",
+      "12.9"
+    ],
+    "env": [
+      {
+        "key": "HF_TOKEN",
+        "input": {
+          "name": "Hugging Face access token",
+          "type": "string",
+          "description": "Optional; avoids anonymous rate limits.",
+          "advanced": true
+        }
+      },
+      {
+        "key": "USE_MOCK_PIPELINE",
+        "input": {
+          "name": "Skip model download (Hub smoke test only)",
+          "type": "string",
+          "description": "Set to 1 for Hub smoke tests; normal inference uses 0.",
+          "options": [
+            {
+              "label": "Disabled",
+              "value": "0"
+            },
+            {
+              "label": "Enabled",
+              "value": "1"
+            }
+          ],
+          "default": "0",
+          "advanced": true
+        }
+      }
+    ]
   }
 }

@@ -1,33 +1,20 @@
 # Qwen-Image-2.1 GGUF on RunPod Serverless
 
-This project extends the official RunPod ComfyUI worker with current ComfyUI and the `leejet/ComfyUI-GGUF` fork required by the linked model. The Q4_K_M transformer, int8 text encoder and BF16 VAE are baked into the image so a Hub deployment does not require a network volume. These three files total approximately 14.6 GB; allow build time and disk space for the download.
+This project extends the official RunPod ComfyUI worker with current ComfyUI and the `leejet/ComfyUI-GGUF` fork. Following the architecture of [the reference worker](https://github.com/jiankeong/qwen-image-edit-runpod), the Docker image includes code but **does not download the approximately 14.6 GB of weights during the Hub build**. At normal worker startup, `bootstrap_models.py` downloads the Q4_K_M transformer, int8 text encoder and BF16 VAE into `/runpod-volume/hf-cache` and links them into `/comfyui/models`. A network volume is recommended so later cold starts reuse the cache; without one, the configured container disk is used and downloads recur on new workers.
 
-The repository's root `handler.py` defines `handler(event)` and explicitly calls `runpod.serverless.start()` for RunPod's repository check. The Dockerfile preserves the official worker implementation as `/worker_comfyui_handler.py` and delegates every job to it; the inherited `/start.sh` still starts ComfyUI first. Select the `main` branch (or the newest release), not `v0.1.0`: that original tag predates the handler file.
+The Hub smoke test sets `USE_MOCK_PIPELINE=1`, which skips model download but still boots the official ComfyUI worker and runs a tiny image workflow. Normal inference defaults to `0`. The root `handler.py` explicitly calls `runpod.serverless.start()` and delegates jobs to the official worker implementation.
 
 ## 1. Hub deployment
 
-The root `Dockerfile`, `handler.py`, and `README.md`, plus `.runpod/hub.json` and `.runpod/tests.json`, provide the files required for a RunPod Hub listing. Create a new GitHub release after changes; the Hub indexes releases, not individual commits. Select the newest release. The Hub test uses a tiny ComfyUI `EmptyImage` → `SaveImage` workflow to check startup, request handling and image output without spending time on diffusion; test Qwen generation with the workflow below after deployment. The Docker build downloads the weights from Hugging Face.
+The root `Dockerfile`, `handler.py`, and `README.md`, plus `.runpod/hub.json` and `.runpod/tests.json`, provide the files required for a RunPod Hub listing. Create a new GitHub release after changes; the Hub indexes releases, not individual commits. Select the newest release. The Hub test uses a tiny ComfyUI `EmptyImage` → `SaveImage` workflow to check startup, request handling and image output without spending time on diffusion; test Qwen generation with the workflow below after deployment. Model weights are downloaded at normal worker startup, not during the Hub build.
 
-## 2. Optional: populate a network volume
+## 2. Persistent model cache
 
-The default image already contains the model files. For a custom image without baked weights, create a RunPod network volume in the same region as your endpoint. Attach it to a temporary Pod and, inside that Pod, run:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/jiankeong/qwen-image-2-1/main/download_models.sh -o /tmp/download_models.sh
-bash /tmp/download_models.sh /runpod-volume/models
-```
-
-Alternatively copy this repository's `download_models.sh` into the Pod and run it there. Confirm these files exist:
-
-```text
-/runpod-volume/models/diffusion_models/qwen-image-2.1-Q4_K_M.gguf
-/runpod-volume/models/text_encoders/qwen3vl_8b_int8_convrot.safetensors
-/runpod-volume/models/vae/qwen_image_2.1_vae_bf16.safetensors
-```
+Attach a RunPod network volume to the endpoint to persist model downloads. The worker creates `/runpod-volume/hf-cache` and downloads the three Hugging Face assets on the first normal startup. Later workers with the same volume reuse the cached files. If no network volume is attached, the same path uses container disk and a new worker may need to download again. Allow at least 40 GB free for cache and runtime files. Do not pre-populate `/runpod-volume/models` with `download_models.sh` for this image; this startup path uses the Hugging Face cache instead.
 
 ## 3. Build and deploy
 
-Push this repository to GitHub. In RunPod, choose **Serverless → New Endpoint → Start from GitHub Repo**, select the repository, set context `/` and Dockerfile `Dockerfile`. Select one GPU with at least 24 GB VRAM and adequate system RAM for the 9.35 GB text encoder; start with 0 active workers and 1 maximum worker. Allow at least 40 GB container disk for the baked weights and runtime. Deploy, then note the endpoint ID. The initial build downloads the model and installs ComfyUI and the GGUF fork, so it can take time.
+Push this repository to GitHub. In RunPod, choose **Serverless → New Endpoint → Start from GitHub Repo**, select the repository, set context `/` and Dockerfile `Dockerfile`. Select one GPU with at least 24 GB VRAM and adequate system RAM for the 9.35 GB text encoder; start with 0 active workers and 1 maximum worker. Allow at least 40 GB container disk for model cache and runtime when no network volume is attached. Deploy, then note the endpoint ID. The initial build installs ComfyUI and the GGUF fork; normal worker startup downloads the three model weights unless they are cached on its network volume.
 
 ## 4. Prepare and submit a workflow
 
