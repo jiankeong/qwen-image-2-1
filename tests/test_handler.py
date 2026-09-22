@@ -21,9 +21,14 @@ class HandlerEntrypointTest(unittest.TestCase):
         upstream.handler = official_handler
 
         with patch.dict(sys.modules, {"runpod": runpod, "worker_comfyui_handler": upstream}):
-            runpy.run_path(str(ROOT / "handler.py"), run_name="__main__")
+            namespace = runpy.run_path(str(ROOT / "handler.py"), run_name="__main__")
 
-        start.assert_called_once_with({"handler": official_handler})
+        registered_handler = start.call_args.args[0]["handler"]
+        self.assertIs(registered_handler, namespace["handler"])
+        event = {"input": {"workflow": {}}}
+        official_handler.return_value = {"images": []}
+        self.assertEqual(registered_handler(event), {"images": []})
+        official_handler.assert_called_once_with(event)
 
     def test_dockerfile_preserves_upstream_and_inherited_startup(self):
         dockerfile = (ROOT / "Dockerfile").read_text()
